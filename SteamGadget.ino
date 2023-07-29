@@ -3,7 +3,7 @@
 #include "LedControl.h"
 
 RTC_DS3231 rtc;                     // create rtc for the DS3231 RTC module, address is fixed at 0x68
-LedControl lc = LedControl(12,11,10,1);
+LedControl lc = LedControl(12,11,10,2);
 
 const unsigned long dotDelay=500;
 bool serialOutput = false;
@@ -148,7 +148,7 @@ void formatTime()
   hoursOnes = hh % 10;
 }
 
-void segOutputTime()
+void segZeroOutputTime()
 {
   lc.setDigit(0,0,secondsOnes, false);
 
@@ -171,16 +171,44 @@ void segOutputTime()
   
 }
 
+void segOneOutputTime()
+{
+  lc.setDigit(1,0,secondsOnes, false);
+
+  lc.setDigit(1,1,secondsTens, false);
+
+  lc.setDigit(1,3,minutesOnes, false);
+
+  lc.setDigit(1,4,minutesTens, false);
+  
+  lc.setDigit(1,6,hoursOnes, false);
+  
+  if (hoursTens != 0)
+  {
+    lc.setDigit(1,7,hoursTens, false);
+  }
+  else
+  {
+    lc.setChar(1,7,' ', false);
+  }
+}
+
 void dotsOn()
 {
   lc.setChar(0, 5, ' ', true);//dot on
   lc.setChar(0, 2, ' ', true);//dot on
+
+  lc.setChar(1, 5, ' ', true);//dot on
+  lc.setChar(1, 2, ' ', true);//dot on
 }
 
 void dotsOff()
 {
   lc.setChar(0, 5, ' ', false);//dot off
   lc.setChar(0, 2, ' ', false);//dot off
+
+  lc.setChar(1, 5, ' ', false);//dot off
+  lc.setChar(1, 2, ' ', false);//dot off
 }
 
 void setup() 
@@ -190,14 +218,17 @@ void setup()
   rtc.begin();
 
   lc.shutdown(0,false);
+  lc.shutdown(1,false);
 
   /* Set the brightness to a medium values */
 
   lc.setIntensity(0,4);
+  lc.setIntensity(1,4);
 
   /* and clear the display */
 
   lc.clearDisplay(0);
+  lc.clearDisplay(1);
 }
 
 void displayDots()
@@ -243,7 +274,9 @@ void loop()
 
   formatTime();
   
-  segOutputTime();
+  segZeroOutputTime();
+
+  segOneOutputTime();
 
   doEachSecond();
 
